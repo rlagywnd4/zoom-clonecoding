@@ -16,16 +16,13 @@ const wss = new WebSocket.Server({ server });
 
 const sockets = [];
 
-function onSocketMessage(sockets, msg) {
+function onSocketMessage(sockets, socket, msg) {
   const message = JSON.parse(msg);
-  socket['nickname'] = 'Anon';
   switch (message.type) {
     case 'new_message':
-      sockets.forEach((aSocket) =>
-        setTimeout(() => {
-          aSocket.send(`${socket.nickname}: ${message.payload}`);
-        }, 1000)
-      );
+      sockets.forEach((aSocket) => {
+        aSocket.send(`${socket.nickname}: ${message.payload}`);
+      });
     //   socket.send(message);
     case 'nickname':
       socket['nickname'] = message.payload;
@@ -39,9 +36,10 @@ function onSocketClose() {
 // socket : 연결된 브라우저
 wss.on('connection', (socket) => {
   sockets.push(socket);
+  socket['nickname'] = 'Anon';
   //   console.log('socket-------', socket, '-------socket');
   console.log('Connected to Browser');
-  socket.on('message', (message) => onSocketMessage(sockets, message));
+  socket.on('message', (message) => onSocketMessage(sockets, socket, message));
   socket.on('close', onSocketClose);
 });
 
